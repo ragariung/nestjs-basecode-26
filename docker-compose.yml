@@ -1,0 +1,19 @@
+services:
+  api:
+    build: .
+    image: mynest-basecode-26:latest
+    container_name: mynest-basecode-26
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Overrides .env's "localhost" so the container can reach the DB
+      # containers' host-published ports (each DB is its own compose stack).
+      DATABASE_URL_POSTGRES: postgresql://homelab:Homelab2026*@host.docker.internal:50501/homelab?schema=public
+      DATABASE_URL_MYSQL: mysql://homelab:Homelab2026*@host.docker.internal:50502/homelab
+      DATABASE_URL_MONGO: mongodb://homelab:Homelab2026*@host.docker.internal:50500/homelab?authSource=admin
+      DATABASE_URL_COCKROACH: postgresql://homelab:Homelab2026*@host.docker.internal:50503/defaultdb?sslmode=disable
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
