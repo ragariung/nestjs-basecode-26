@@ -7,3 +7,54 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL_POSTGRES")
 }
+
+enum RoleName {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  SPV
+  USER
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles Role[]
+
+  @@map("tenants")
+}
+
+/// A role is scoped to a tenant, except SUPER_ADMIN whose tenantId is null
+/// (a global role that is not restricted to any single tenant).
+model Role {
+  id        String   @id @default(uuid())
+  name      RoleName
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users User[]
+
+  @@unique([tenantId, name])
+  @@map("roles")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  isActive  Boolean  @default(true)
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}

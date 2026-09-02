@@ -7,7 +7,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
-  app.enableCors();
+  app.enableCors({
+    exposedHeaders: ['x-refreshed-token'],
+  });
   app.setGlobalPrefix(config.get<string>('API_PREFIX', 'api'));
   app.useGlobalPipes(
     new ValidationPipe({
